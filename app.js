@@ -131,14 +131,14 @@ function load(){ try{ const r=localStorage.getItem(STORE); return r?JSON.parse(r
 // ---- compartir por link (datos en la URL) ----
 function toURL(){
   try{
-    const data = btoa(unescape(encodeURIComponent(JSON.stringify({p:state.people,i:state.items,r:state.rounding}))));
+    const data = btoa(encodeURIComponent(JSON.stringify({p:state.people,i:state.items,r:state.rounding})));
     return location.origin+location.pathname+"#j="+data;
   }catch(e){ return location.href; }
 }
 function fromURL(){
   try{
     const m = location.hash.match(/#j=(.+)/); if(!m) return null;
-    const o = JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+    const o = JSON.parse(decodeURIComponent(atob(m[1])));
     return {people:o.p||[], items:o.i||[], rounding:o.r||0};
   }catch(e){ return null; }
 }
