@@ -576,49 +576,39 @@ function renderItems(){
   $("#ni-payer").innerHTML = '<option value="">¿Quién pagó?</option>' + renderPayerOptions("");
 }
 
-function renderTotals(c){
-  $(“#total”).textContent=money(c.total);
-  $(“#sub-com”).textContent=”🍽️ Comida “+money(c.comida);
-  $(“#sub-beb”).textContent=”🍺 Bebida “+money(c.bebida);
-  $(“#sub-ext”).textContent=”🧊 Extras “+money(c.extras);
-  $(“#sub-pos”).textContent=”🧁 Postre “+money(c.postre);
-}
-function renderSplitCards(c){
-  $(“#food-per”).textContent=money(c.comidaShare);
-  $(“#food-det”).textContent= c.np ? money(c.comida)+” ÷ “+c.np : “entre todos”;
-  $(“#drink-per”).textContent=money(c.bebidaShare);
-  $(“#drink-det”).textContent= c.bebida ? money(c.bebida)+” ÷ “+c.nDrinkers+” que toman” : “los que toman”;
-  $(“#postre-per”).textContent=money(c.postreShare);
-  $(“#postre-det”).textContent= c.postre ? money(c.postre)+” ÷ “+c.nEaters+” que comen” : “los que comen”;
-  $(“#postre-card”).classList.toggle(“hidden”, c.postre<=0);
-  $(“#extra-per”).textContent=money(c.extrasShare);
-  $(“#extra-card”).classList.toggle(“hidden”, c.extras<=0);
-}
-function renderPerPerson(c){
-  const anyPaid = c.pp.some(p=>p.paid>0);
-  $(“#perperson”).innerHTML = c.pp.length ? c.pp.map(p=>`
-    <div class=”pp”>
-      <div><span class=”nm”>${esc(p.name)}</span>
-        <div class=”meta”>🍽️ ${money(p.comidaShare)}${p.extrasShare>0?` + 🧊 ${money(p.extrasShare)}`:''}${p.bebidaShare>0?` + 🍺 ${money(p.bebidaShare)}`:''}${p.postreShare>0?` + 🧁 ${money(p.postreShare)}`:''}${anyPaid?` · puso ${money(p.paid)}`:''}</div></div>
-      <span class=”amt”>${money(p.share)}</span>
-    </div>`).join(“”) : '<div class=”empty”>Agregá personas y gastos para ver el reparto.</div>';
-  $(“#round-note”).innerHTML = state.rounding ? `<div class=”note”>Montos redondeados a $${state.rounding.toLocaleString(“es-AR”)} — puede sobrar o faltar algún peso al juntar el efectivo.</div>` : “”;
-  return anyPaid;
-}
-function renderSettle(c, anyPaid){
-  const t = anyPaid ? settle(c.pp) : [];
-  $(“#settle”).innerHTML = t.length ? `
-    <div class=”settle”><h3>🔁 Cómo saldar</h3>${t.map(x=>`
-      <div class=”t”>→ <b>${esc(x.from)}</b> le transfiere <b>${money(x.amount)}</b> a <b>${esc(x.to)}</b>
-      ${x.alias?`<div class=”alias”>alias: ${esc(x.alias)}</div>`:''}</div>`).join(“”)}</div>`
-    : ((c.pp.length && c.total>0 && !anyPaid) ? `<div class=”settle” style=”background:#fff;border-color:var(--line)”><h3 style=”color:var(--muted)”>🔁 Cómo saldar</h3><div class=”t” style=”color:var(--muted)”>Asigná <b>quién pagó</b> cada gasto (en el desplegable “¿Quién pagó?”) y acá va a aparecer quién le transfiere a quién para quedar a mano.</div></div>` : “”);
-}
 function renderResult(){
   const c=compute();
-  renderTotals(c);
-  renderSplitCards(c);
-  const anyPaid = renderPerPerson(c);
-  renderSettle(c, anyPaid);
+  $("#total").textContent=money(c.total);
+  $("#sub-com").textContent="🍽️ Comida "+money(c.comida);
+  $("#sub-beb").textContent="🍺 Bebida "+money(c.bebida);
+  $("#sub-ext").textContent="🧊 Extras "+money(c.extras);
+  $("#sub-pos").textContent="🧁 Postre "+money(c.postre);
+  $("#food-per").textContent=money(c.comidaShare);
+  $("#food-det").textContent= c.np ? money(c.comida)+" ÷ "+c.np : "entre todos";
+  $("#drink-per").textContent=money(c.bebidaShare);
+  $("#drink-det").textContent= c.bebida ? money(c.bebida)+" ÷ "+c.nDrinkers+" que toman" : "los que toman";
+  $("#postre-per").textContent=money(c.postreShare);
+  $("#postre-det").textContent= c.postre ? money(c.postre)+" ÷ "+c.nEaters+" que comen" : "los que comen";
+  $("#postre-card").classList.toggle("hidden", c.postre<=0);
+  $("#extra-per").textContent=money(c.extrasShare);
+  $("#extra-card").classList.toggle("hidden", c.extras<=0);
+
+  const anyPaid = c.pp.some(p=>p.paid>0);
+  $("#perperson").innerHTML = c.pp.length ? c.pp.map(p=>`
+    <div class="pp">
+      <div><span class="nm">${esc(p.name)}</span>
+        <div class="meta">🍽️ ${money(p.comidaShare)}${p.extrasShare>0?` + 🧊 ${money(p.extrasShare)}`:''}${p.bebidaShare>0?` + 🍺 ${money(p.bebidaShare)}`:''}${p.postreShare>0?` + 🧁 ${money(p.postreShare)}`:''}${anyPaid?` · puso ${money(p.paid)}`:''}</div></div>
+      <span class="amt">${money(p.share)}</span>
+    </div>`).join("") : '<div class="empty">Agregá personas y gastos para ver el reparto.</div>';
+
+  $("#round-note").innerHTML = state.rounding ? `<div class="note">Montos redondeados a $${state.rounding.toLocaleString("es-AR")} — puede sobrar o faltar algún peso al juntar el efectivo.</div>` : "";
+
+  const t = anyPaid ? settle(c.pp) : [];
+  $("#settle").innerHTML = t.length ? `
+    <div class="settle"><h3>🔁 Cómo saldar</h3>${t.map(x=>`
+      <div class="t">→ <b>${esc(x.from)}</b> le transfiere <b>${money(x.amount)}</b> a <b>${esc(x.to)}</b>
+      ${x.alias?`<div class="alias">alias: ${esc(x.alias)}</div>`:''}</div>`).join("")}</div>`
+    : ((c.pp.length && c.total>0 && !anyPaid) ? `<div class="settle" style="background:#fff;border-color:var(--line)"><h3 style="color:var(--muted)">🔁 Cómo saldar</h3><div class="t" style="color:var(--muted)">Asigná <b>quién pagó</b> cada gasto (en el desplegable “¿Quién pagó?”) y acá va a aparecer quién le transfiere a quién para quedar a mano.</div></div>` : "");
   save();
 }
 
