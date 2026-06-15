@@ -361,6 +361,20 @@ $("#pl-load").onclick=()=>{
   $("#tab-div-btn").click();
   renderAll();
 };
+function planItemCat(it){
+  if(isDrinkItem(it.name)) return "bebida";
+  if(/postre/i.test(it.name)) return "postre";
+  if(/carb[oó]n|hielo/i.test(it.name)) return "extras";
+  return "comida";
+}
+$("#pl-load-items").onclick=()=>{
+  const loadable = planWork.filter(it=>it.text==null);
+  if(!loadable.length) return;
+  if(state.items.length && !confirm("Esto reemplaza los gastos actuales con los ítems del planificador (sin precios). ¿Seguir?")) return;
+  state.items = loadable.map(it=>({id:uid(), name:it.ic+" "+it.name, price:0, cat:planItemCat(it), payer:""}));
+  $("#tab-div-btn").click();
+  renderAll();
+};
 // ---- Copiar lista del planificador ----
 function planContext(){
   const type=$("#pl-type").value||"asado";
