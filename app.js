@@ -352,26 +352,26 @@ document.querySelectorAll(".pl-dec").forEach(b=>b.onclick=()=>{ const inp=$(b.da
 document.querySelectorAll(".pl-inc").forEach(b=>b.onclick=()=>{ const inp=$(b.dataset.g==="h"?"#pl-h":"#pl-m"); inp.value=(parseInt(inp.value)||0)+1; renderPlan(); });
 $("#pl-n-dec").onclick=()=>{ $("#pl-n").value=Math.max(0,(parseInt($("#pl-n").value)||0)-1); renderPlan(); };
 $("#pl-n-inc").onclick=()=>{ $("#pl-n").value=(parseInt($("#pl-n").value)||0)+1; renderPlan(); };
-$("#pl-load").onclick=()=>{
-  let n = state.planSplit ? (Math.max(0,parseInt($("#pl-h").value)||0)+Math.max(0,parseInt($("#pl-m").value)||0)) : Math.max(0,parseInt($("#pl-n").value)||0);
-  if(!n) return;
-  if(state.people.length && !confirm("Esto reemplaza las personas actuales por "+n+" nuevas. ¿Seguir?")) return;
-  state.people = Array.from({length:n},(_,i)=>({id:uid(),name:"Persona "+(i+1),toma:true,postre:true,alias:""}));
-  state.items.forEach(it=>it.payer="");
-  $("#tab-div-btn").click();
-  renderAll();
-};
 function planItemCat(it){
   if(isDrinkItem(it.name)) return "bebida";
   if(/postre/i.test(it.name)) return "postre";
   if(/carb[oó]n|hielo/i.test(it.name)) return "extras";
   return "comida";
 }
-$("#pl-load-items").onclick=()=>{
+$("#pl-load").onclick=()=>{
+  let n = state.planSplit ? (Math.max(0,parseInt($("#pl-h").value)||0)+Math.max(0,parseInt($("#pl-m").value)||0)) : Math.max(0,parseInt($("#pl-n").value)||0);
   const loadable = planWork.filter(it=>it.text==null);
-  if(!loadable.length) return;
-  if(state.items.length && !confirm("Esto reemplaza los gastos actuales con los ítems del planificador (sin precios). ¿Seguir?")) return;
-  state.items = loadable.map(it=>({id:uid(), name:it.ic+" "+it.name, price:0, cat:planItemCat(it), payer:""}));
+  if(!n && !loadable.length) return;
+  const hasPeople = state.people.length > 0;
+  const hasItems = state.items.length > 0;
+  if((hasPeople || hasItems) && !confirm("Esto reemplaza las personas y gastos actuales con los datos del planificador. ¿Seguir?")) return;
+  if(n) {
+    state.people = Array.from({length:n},(_,i)=>({id:uid(),name:"Persona "+(i+1),toma:true,postre:true,alias:""}));
+    state.items.forEach(it=>it.payer="");
+  }
+  if(loadable.length) {
+    state.items = loadable.map(it=>({id:uid(), name:it.ic+" "+it.name, price:0, cat:planItemCat(it), payer:""}));
+  }
   $("#tab-div-btn").click();
   renderAll();
 };
