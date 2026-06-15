@@ -322,7 +322,14 @@ function renderResult(){
   save();
 }
 
-function renderAll(){ renderPeople(); renderItems(); renderResult(); renderPlan(); renderRules(); }
+function updateNameSuggestions(){
+  const dl=$("#ni-name-list"); if(!dl) return;
+  const names=new Set();
+  planWork.forEach(it=>names.add(it.ic+" "+it.name));
+  state.items.forEach(it=>{ if(it.name) names.add(it.name); });
+  dl.innerHTML=[...names].map(n=>`<option value="${esc(n)}">`).join("");
+}
+function renderAll(){ renderPeople(); renderItems(); renderResult(); renderPlan(); renderRules(); updateNameSuggestions(); }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 // ---- TABS ----
