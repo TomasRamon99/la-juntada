@@ -200,8 +200,8 @@ function renderPlanList(){
     + planWork.map((it,idx)=>{
         const right = (it.text!=null)
           ? `<span style="color:var(--muted)">${esc(it.text)}</span>`
-          : `<button class="pl-q-dec" data-i="${idx}" style="background:none;color:var(--muted);font-size:19px;line-height:1;padding:0 9px">−</button><b style="font-variant-numeric:tabular-nums;min-width:30px;text-align:right;display:inline-block">${plnum(it.qty)}</b> <span style="color:var(--muted);font-size:12.5px">${it.unit}</span><button class="pl-q-inc" data-i="${idx}" style="background:none;color:var(--accent);font-size:19px;line-height:1;padding:0 9px">+</button>`;
-        return `<div class="planrow"><span class="q"><button class="pl-q-x" data-i="${idx}" style="background:none;color:var(--muted);font-size:17px;line-height:1;padding:0 4px 0 0">×</button><span>${it.ic} ${esc(it.name)}</span></span><span class="a" style="display:flex;align-items:center;gap:1px">${right}</span></div>`;
+          : `<button class="pl-q-dec" data-i="${idx}" style="background:none;color:var(--muted);font-size:19px;line-height:1;min-width:40px;min-height:40px;padding:0 9px">−</button><b style="font-variant-numeric:tabular-nums;min-width:30px;text-align:right;display:inline-block">${plnum(it.qty)}</b> <span style="color:var(--muted);font-size:12.5px">${it.unit}</span><button class="pl-q-inc" data-i="${idx}" style="background:none;color:var(--accent);font-size:19px;line-height:1;min-width:40px;min-height:40px;padding:0 9px">+</button>`;
+        return `<div class="planrow"><span class="q"><button class="pl-q-x" data-i="${idx}" style="background:none;color:var(--muted);font-size:17px;line-height:1;padding:0 4px 0 0" aria-label="Eliminar ítem">×</button><span>${it.ic} ${esc(it.name)}</span></span><span class="a" style="display:flex;align-items:center;gap:1px">${right}</span></div>`;
       }).join("")
     + (planWork.length===0?'<div class="empty">Sacaste todos los ítems. Cambiá el tipo o la cantidad de personas para recalcular.</div>':"");
 }
@@ -229,7 +229,7 @@ function renderRules(){
     <div class="rrow" data-idx="${idx}">
       <span class="rnum">${idx+1}</span>
       <span class="rtext">${esc(r)}</span>
-      <button class="x r-del">×</button>
+      <button class="x r-del" aria-label="Eliminar regla">×</button>
     </div>`).join("") : '<div class="empty">Todavía no hay reglas. Agregá la primera 👇</div>';
 }
 
@@ -241,11 +241,11 @@ function renderPeople(){
     <div class="prow" data-id="${p.id}">
       <div class="row">
         <input class="p-name" value="${esc(p.name)}" placeholder="Nombre" style="flex:1">
-        <button class="x p-del">×</button>
+        <button class="x p-del" aria-label="Eliminar persona">×</button>
       </div>
       <div class="row" style="margin-top:6px">
-        <span class="pill ${p.toma?'on':''} p-toma">🍺 toma</span>
-        <span class="pill ${p.postre?'on':''} p-postre">🧁 postre</span>
+        <span class="pill ${p.toma?'on':''} p-toma" role="checkbox" aria-checked="${p.toma}">🍺 toma</span>
+        <span class="pill ${p.postre?'on':''} p-postre" role="checkbox" aria-checked="${p.postre}">🧁 postre</span>
       </div>
       <div class="row" style="margin-top:6px">
         <input class="p-alias" value="${esc(p.alias||'')}" placeholder="alias / CBU para transferencias" style="flex:1">
@@ -264,7 +264,7 @@ function renderItems(){
       <div class="row">
         <input class="i-name" value="${esc(it.name)}" style="flex:2">
         <input class="i-price" type="number" inputmode="decimal" value="${it.price}" style="flex:1">
-        <button class="x i-del">×</button>
+        <button class="x i-del" aria-label="Eliminar gasto">×</button>
       </div>
       <div class="row" style="margin-top:6px">
         <select class="i-cat" style="flex:1">
