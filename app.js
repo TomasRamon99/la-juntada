@@ -28,6 +28,8 @@ const PLAN_TYPES = {
     {ic:"🍞",name:"Pan",qty:Math.round(n*0.15*10)/10,unit:"kg",step:0.1},
     {ic:"🔥",name:"Carbón",qty:Math.round((carne+1)*10)/10,unit:"kg",step:0.5},
     {ic:"🥤",name:"Gaseosa (2,5 L)",qty:Math.ceil(n/3),unit:"u",step:1},
+    {ic:"🍺",name:"Cerveza",qty:Math.round(n*0.5*10)/10,unit:"L",step:0.5},
+    {ic:"🍋",name:"Fernet",qty:Math.round(n*0.125*4)/4,unit:"L",step:0.25},
   ];}},
   choripan:{ note:"2 choripanes por persona. Un pan por chori.", rows:(h,m)=>{const n=h+m;const ch=Math.round(n*2);return[
     {ic:"🌭",name:"Chorizos",qty:ch,unit:"u",step:1},
