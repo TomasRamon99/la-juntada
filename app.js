@@ -325,7 +325,13 @@ function renderResult(){
 function updateNameSuggestions(){
   const dl=$("#ni-name-list"); if(!dl) return;
   const names=new Set();
-  planWork.forEach(it=>names.add(it.ic+" "+it.name));
+  const type=state.planType||"asado"; const t=PLAN_TYPES[type];
+  if(t){
+    const h=state.planSplit?state.planH:state.planN/2;
+    const m=state.planSplit?state.planM:state.planN/2;
+    t.rows(h,m).forEach(it=>names.add(it.ic+" "+it.name));
+    names.add("🧁 Postre (helado ~1 kg c/4)");
+  }
   state.items.forEach(it=>{ if(it.name) names.add(it.name); });
   dl.innerHTML=[...names].map(n=>`<option value="${esc(n)}">`).join("");
 }
