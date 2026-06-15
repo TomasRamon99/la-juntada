@@ -1,5 +1,12 @@
 const $ = s => document.querySelector(s);
 const money = n => "$" + Math.round(n).toLocaleString("es-AR");
+function parsePrice(s){
+  s=String(s).trim().replace(/\s/g,"");
+  if(!s) return 0;
+  if(s.includes(",")){ s=s.replace(/\./g,"").replace(",","."); }
+  else if(/\.\d{3}$/.test(s)){ s=s.replace(/\./g,""); }
+  return parseFloat(s)||0;
+}
 const uid = () => Math.random().toString(36).slice(2,9);
 const STORE = "laJuntada_v4";
 const HIST = "laJuntada_hist";
@@ -263,7 +270,7 @@ function renderItems(){
     <div class="irow" data-id="${it.id}">
       <div class="row">
         <input class="i-name" value="${esc(it.name)}" style="flex:2">
-        <input class="i-price" type="number" inputmode="decimal" value="${it.price}" style="flex:1">
+        <input class="i-price" type="text" inputmode="decimal" value="${it.price}" style="flex:1">
         <button class="x i-del" aria-label="Eliminar gasto">×</button>
       </div>
       <div class="row" style="margin-top:6px">
@@ -421,7 +428,7 @@ $("#plist").addEventListener("click",e=>{
 
 // ---- GASTOS events ----
 function addItem(){
-  const name=$("#ni-name").value.trim(); const price=parseFloat($("#ni-price").value);
+  const name=$("#ni-name").value.trim(); const price=parsePrice($("#ni-price").value);
   if(!name||isNaN(price)){ $("#ni-name").focus(); return; }
   state.items.push({id:uid(),name,price,cat:$("#ni-cat").value,payer:$("#ni-payer").value||""});
   $("#ni-name").value=""; $("#ni-price").value=""; renderAll(); $("#ni-name").focus();
@@ -431,7 +438,7 @@ $("#ni-price").addEventListener("keydown",e=>{ if(e.key==="Enter")addItem(); });
 $("#ilist").addEventListener("input",e=>{
   const row=e.target.closest(".irow"); if(!row)return; const it=state.items.find(x=>x.id===row.dataset.id);
   if(e.target.classList.contains("i-name"))it.name=e.target.value;
-  if(e.target.classList.contains("i-price"))it.price=parseFloat(e.target.value)||0;
+  if(e.target.classList.contains("i-price"))it.price=parsePrice(e.target.value)||0;
   renderResult();
 });
 $("#ilist").addEventListener("change",e=>{
