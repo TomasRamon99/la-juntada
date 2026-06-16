@@ -337,6 +337,29 @@ function updateNameSuggestions(){
   state.items.forEach(it=>{ if(it.name) names.add(it.name); });
   dl.innerHTML=[...names].map(n=>`<option value="${esc(n)}">`).join("");
 }
+function renderPagos(){
+  const c=compute(); const anyPaid=c.pp.some(p=>p.paid>0);
+  const t=anyPaid?settle(c.pp):[];
+  const ps=$("#pagos-settle"); const pp2=$("#pagos-persons");
+  if(!ps||!pp2) return;
+  if(!c.pp.length){
+    ps.innerHTML='<div class="empty">Agregá personas y gastos en Cuentas primero.</div>';
+    pp2.innerHTML=''; return;
+  }
+  if(!anyPaid){
+    ps.innerHTML='<div class="note" style="text-align:center;padding:10px">Asigná quién pagó cada gasto en Cuentas para ver las transferencias.</div>';
+  } else if(!t.length){
+    ps.innerHTML='<div style="background:var(--ok-soft);border:1px solid #bfe3cd;border-radius:12px;padding:14px;text-align:center;color:var(--ok);font-weight:600">✓ Todos están a mano — no hay transferencias pendientes.</div>';
+  } else {
+    ps.innerHTML=t.map(x=>`<div class="pagos-row"><div><span class="nm">${esc(x.from)}</span> → <span class="nm">${esc(x.to)}</span>${x.alias?`<div class="alias">alias: ${esc(x.alias)}</div>`:''}</div><div class="pagos-amt">${money(x.amount)}</div></div>`).join("");
+  }
+  pp2.innerHTML=c.pp.map(p=>{
+    const bal=p.balance; const pos=bal>0.5; const neg=bal<-0.5;
+    const color=pos?"var(--ok)":neg?"var(--accent)":"var(--muted)";
+    const label=pos?"↑ cobra":neg?"↓ debe":"a mano";
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)"><div><span class="nm">${esc(p.name)}</span><div style="font-size:12px;color:var(--muted)">puso ${money(p.paid)} · le corresponde ${money(p.share)}</div></div><div style="text-align:right"><div style="font-weight:700;color:${color};font-variant-numeric:tabular-nums">${pos?"+":""}${money(Math.abs(bal))}</div><div style="font-size:11px;color:${color}">${label}</div></div></div>`;
+  }).join("");
+}
 function renderAll(){ renderPeople(); renderItems(); renderResult(); renderPlan(); renderRules(); updateNameSuggestions(); }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
@@ -347,7 +370,8 @@ document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
   const tab=t.dataset.tab;
   $("#view-plan").classList.toggle("hidden", tab!=="plan");
   $("#view-div").classList.toggle("hidden", tab!=="div");
-  $("#view-reglas").classList.toggle("hidden", tab!=="reglas");
+  $("#view-pagos").classList.toggle("hidden", tab!=="pagos");
+  if(tab==="pagos") renderPagos();
 });
 
 // ---- PLANIFICAR events ----
@@ -541,6 +565,8 @@ function renderHist(){
     </div>`).join("") : '<div class="empty">Todavía no guardaste ninguna juntada.</div>';
 }
 $("#btn-hist").onclick=()=>{ renderHist(); $("#dlg-hist").showModal(); };
+$("#btn-reglas").onclick=()=>{ renderRules(); $("#dlg-reglas").showModal(); };
+$("#reglas-close").onclick=()=>$("#dlg-reglas").close();
 $("#hist-close").onclick=()=>$("#dlg-hist").close();
 $("#hist-list").addEventListener("click",e=>{
   const row=e.target.closest(".histitem"); if(!row)return; const id=row.dataset.id; const h=getHist();

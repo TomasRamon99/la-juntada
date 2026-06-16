@@ -171,18 +171,32 @@
   </section>
 </div>
 
-<!-- ============ REGLAS ============ -->
-<div id="view-reglas" class="hidden">
+<!-- ============ QUIEN PAGO ============ -->
+<div id="view-pagos" class="hidden">
   <section class="card">
-    <h2>📜 Reglas de oro de la juntada</h2>
+    <h2>🔁 Transferencias</h2>
+    <p class="hint">Lo que tiene que pagar cada uno para quedar a mano.</p>
+    <div id="pagos-settle"></div>
+  </section>
+  <section class="card">
+    <h2>👤 Resumen por persona</h2>
+    <div id="pagos-persons"></div>
+  </section>
+</div>
+
+<!-- DIALOG REGLAS -->
+<dialog id="dlg-reglas">
+  <div class="d-in">
+    <h2 style="margin-top:0">📜 Reglas de oro de la juntada</h2>
     <p class="hint">Las leyes no escritas del asado. Agregá las tuyas y borrá las que no van. Se guardan en tu celular.</p>
     <div class="rlist" id="rlist"></div>
     <div class="row" style="margin-top:12px;align-items:flex-start">
       <textarea id="nr-text" placeholder="Escribí una regla nueva…" style="flex:1;height:56px;border:1.5px solid var(--line);border-radius:9px;padding:9px 10px;font:inherit;resize:vertical"></textarea>
       <button class="add" id="nr-add">Agregar</button>
     </div>
-  </section>
-</div>
+    <div class="actions" style="margin-top:12px"><button class="ghost" id="reglas-close" style="flex:1">Cerrar</button></div>
+  </div>
+</dialog>
 
 <dialog id="dlg-wa">
   <div class="d-in">
