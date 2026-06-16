@@ -567,6 +567,8 @@ function renderHist(){
 $("#btn-hist").onclick=()=>{ renderHist(); $("#dlg-hist").showModal(); };
 $("#btn-reglas").onclick=()=>{ renderRules(); $("#dlg-reglas").showModal(); };
 $("#reglas-close").onclick=()=>$("#dlg-reglas").close();
+$("#btn-reglas").onclick=()=>{ renderRules(); $("#dlg-reglas").showModal(); };
+$("#reglas-close").onclick=()=>$("#dlg-reglas").close();
 $("#hist-close").onclick=()=>$("#dlg-hist").close();
 $("#hist-list").addEventListener("click",e=>{
   const row=e.target.closest(".histitem"); if(!row)return; const id=row.dataset.id; const h=getHist();
@@ -595,6 +597,19 @@ function renderWelcomeHist(){
 }
 
 // ---- init ----
+// ---- Dark mode ----
+const DARK_KEY="laJuntada_dark";
+function applyTheme(dark){
+  document.body.classList.toggle("dark",dark);
+  const btn=$("#btn-dark"); if(btn) btn.textContent=dark?"☀️":"🌙";
+}
+$("#btn-dark").onclick=()=>{
+  const dark=!document.body.classList.contains("dark");
+  try{localStorage.setItem(DARK_KEY,dark?"1":"");}catch(e){}
+  applyTheme(dark);
+};
+applyTheme(!!localStorage.getItem(DARK_KEY));
+
 $("#date").textContent=new Date().toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long"});
 $("#pl-type").value = state.planType||"asado";
 $("#pl-h").value = state.planH;
