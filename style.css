@@ -99,4 +99,9 @@
   .foot{text-align:center;color:var(--muted);font-size:11.5px;margin-top:24px}
   .pagos-row{display:flex;justify-content:space-between;align-items:center;background:var(--ok-soft);border:1px solid #bfe3cd;border-radius:12px;padding:12px 14px;margin-bottom:8px}
 .pagos-amt{font-size:18px;font-weight:800;color:var(--ok);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pagos-row{display:flex;align-items:center;gap:10px}
+.pagos-check{background:none;border:none;font-size:20px;cursor:pointer;padding:2px;flex:0 0 auto;line-height:1}
+.pagos-done{opacity:.5}
+.pagos-done .nm{text-decoration:line-through}
+.pagos-done .pagos-amt{text-decoration:line-through;color:var(--muted)}
 .hidden{display:none!important}

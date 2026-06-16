@@ -106,7 +106,7 @@ function seed(){
     it("Carbón (5 kg)",5000,"extras"),
     it("Fernet",18400,"bebida"), it("Coca (x2)",11380,"bebida"),
   ];
-  return {people:ppl, items, rounding:0, planType:"asado", planSplit:true, planDrink:true, planDessert:false, planH:4, planM:3, planN:7, rules:DEFAULT_RULES.slice()};
+  return {people:ppl, items, rounding:0, planType:"asado", planSplit:true, planDrink:true, planDessert:false, planH:4, planM:3, planN:7, rules:DEFAULT_RULES.slice(), settled:[]};
 }
 function normalize(s){
   s.people = (s.people||[]).map(p=>({id:p.id||uid(),name:p.name||"",toma:!!p.toma,postre:(p.postre!==false),alias:p.alias||""}));
@@ -123,6 +123,7 @@ function normalize(s){
   s.planH = Number.isFinite(+s.planH)? +s.planH : 4;
   s.planM = Number.isFinite(+s.planM)? +s.planM : 3;
   s.planN = Number.isFinite(+s.planN)? +s.planN : 7;
+  s.settled = Array.isArray(s.settled) ? s.settled.filter(x=>typeof x==="string") : [];
   const validPayers = new Set(s.people.map(p=>p.id));
   s.items.forEach(i=>{ if(i.payer && !validPayers.has(i.payer)) i.payer=""; });
   return s;
@@ -351,8 +352,24 @@ function renderPagos(){
   } else if(!t.length){
     ps.innerHTML='<div style="background:var(--ok-soft);border:1px solid #bfe3cd;border-radius:12px;padding:14px;text-align:center;color:var(--ok);font-weight:600">✓ Todos están a mano — no hay transferencias pendientes.</div>';
   } else {
-    ps.innerHTML=t.map(x=>`<div class="pagos-row"><div><span class="nm">${esc(x.from)}</span> → <span class="nm">${esc(x.to)}</span>${x.alias?`<div class="alias">alias: ${esc(x.alias)}</div>`:''}</div><div class="pagos-amt">${money(x.amount)}</div></div>`).join("");
+    ps.innerHTML=t.map(x=>{
+      const key=x.from+"|"+x.to;
+      const done=(state.settled||[]).includes(key);
+      return `<div class="pagos-row${done?" pagos-done":""}">
+        <button class="pagos-check" data-key="${key}" aria-label="${done?"Marcar como pendiente":"Marcar como saldado"}">${done?"✅":"⬜"}</button>
+        <div style="flex:1"><span class="nm">${esc(x.from)}</span> → <span class="nm">${esc(x.to)}</span>${x.alias?`<div class="alias">alias: ${esc(x.alias)}</div>`:''}</div>
+        <div class="pagos-amt">${money(x.amount)}</div>
+      </div>`;
+    }).join("");
   }
+  ps.addEventListener("click",e=>{
+    const btn=e.target.closest(".pagos-check"); if(!btn) return;
+    const key=btn.dataset.key;
+    if(!state.settled) state.settled=[];
+    const idx=state.settled.indexOf(key);
+    if(idx>=0) state.settled.splice(idx,1); else state.settled.push(key);
+    save(); renderPagos();
+  },{once:true});
   pp2.innerHTML=c.pp.map(p=>{
     const bal=p.balance; const pos=bal>0.5; const neg=bal<-0.5;
     const color=pos?"var(--ok)":neg?"var(--accent)":"var(--muted)";
@@ -580,7 +597,7 @@ $("#hist-list").addEventListener("click",e=>{
 });
 
 // ---- Reset ----
-$("#btn-reset").onclick=()=>{ if(confirm("¿Vaciar todo y empezar una juntada nueva?")){ state={people:[],items:[],rounding:0,planType:state.planType,planSplit:state.planSplit,planDrink:state.planDrink,planDessert:state.planDessert,planH:state.planH,planM:state.planM,planN:state.planN,rules:state.rules}; history.replaceState(null,"",location.pathname); document.querySelectorAll("#round-seg button").forEach(b=>b.classList.toggle("on",b.dataset.r==="0")); save(); renderAll(); } };
+$("#btn-reset").onclick=()=>{ if(confirm("¿Vaciar todo y empezar una juntada nueva?")){ state={people:[],items:[],rounding:0,settled:[],planType:state.planType,planSplit:state.planSplit,planDrink:state.planDrink,planDessert:state.planDessert,planH:state.planH,planM:state.planM,planN:state.planN,rules:state.rules}; history.replaceState(null,"",location.pathname); document.querySelectorAll("#round-seg button").forEach(b=>b.classList.toggle("on",b.dataset.r==="0")); save(); renderAll(); } };
 
 // ---- Bienvenida ----
 $("#welcome-start").onclick=()=>{ $("#welcome").style.display="none"; $("#tab-plan-btn").click(); };
