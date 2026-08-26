@@ -20,6 +20,7 @@
       <img src="logo512x512.png" alt="La Juntada" style="width:200px;height:200px;border-radius:16px;margin:0 auto 16px;display:block">
       <p style="font-size:15px;color:var(--muted);line-height:1.6;margin:0">Organizá y dividí los gastos de una juntada de forma fácil, rápida y justa — sin que nadie pague de más ni de menos.</p>
     </div>
+    <div id="welcome-user-bar" style="margin-bottom:12px"></div>
     <button id="welcome-start" class="add" style="width:100%;padding:14px;font-size:16px">Crear una juntada</button>
     <div id="welcome-hist" style="text-align:left;margin-top:24px"></div>
   </div>
@@ -27,6 +28,7 @@
 <header>
   <h1><img src="icon-192.png" alt="" style="width:32px;height:32px;border-radius:8px;vertical-align:middle;margin-right:6px"> La Juntada</h1>
   <p class="tag">Cuentas claras conservan la amistad</p>
+  <p id="juntada-nombre" style="font-size:14px;font-weight:600;color:var(--blue);margin:2px 0 0;display:none"></p>
   <p class="date" id="date"></p>
 </header>
 
@@ -217,6 +219,44 @@
     <h2 style="margin-top:0">📋 Juntadas guardadas</h2>
     <div id="hist-list"></div>
     <div class="actions"><button class="ghost" id="hist-close" style="flex:1">Cerrar</button></div>
+  </div>
+</dialog>
+
+<dialog id="dlg-nueva">
+  <div class="d-in">
+    <h2 style="margin-top:0">🎉 Nueva juntada</h2>
+    <p style="color:var(--muted);font-size:14px;margin-top:0">Ponel un nombre o fecha para encontrarla fácil después.</p>
+    <div class="row" style="flex-direction:column;gap:8px">
+      <label style="font-size:13px;color:var(--muted)">Nombre de la juntada</label>
+      <input id="nueva-nombre" type="text" placeholder="Ej: Asado del sábado, Cumpleaños Fer…" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:var(--bg);color:var(--fg)">
+    </div>
+    <div class="row" style="flex-direction:column;gap:8px;margin-top:12px">
+      <label style="font-size:13px;color:var(--muted)">Fecha (opcional)</label>
+      <input id="nueva-fecha" type="date" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:var(--bg);color:var(--fg)">
+    </div>
+    <div class="actions" style="margin-top:20px">
+      <button class="ghost" id="nueva-cancel" style="flex:1">Cancelar</button>
+      <button class="add" id="nueva-ok" style="flex:2">Empezar →</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dlg-nueva">
+  <div class="d-in">
+    <h2 style="margin-top:0">🎉 Nueva juntada</h2>
+    <p style="color:var(--muted);font-size:14px;margin-top:0">Ponel un nombre o fecha para encontrarla fácil después.</p>
+    <div class="row" style="flex-direction:column;gap:8px">
+      <label style="font-size:13px;color:var(--muted)">Nombre de la juntada</label>
+      <input id="nueva-nombre" type="text" placeholder="Ej: Asado del sábado, Cumpleaños Fer…" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:var(--bg);color:var(--fg)">
+    </div>
+    <div class="row" style="flex-direction:column;gap:8px;margin-top:12px">
+      <label style="font-size:13px;color:var(--muted)">Fecha (opcional)</label>
+      <input id="nueva-fecha" type="date" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:var(--bg);color:var(--fg)">
+    </div>
+    <div class="actions" style="margin-top:20px">
+      <button class="ghost" id="nueva-cancel" style="flex:1">Cancelar</button>
+      <button class="add" id="nueva-ok" style="flex:2">Empezar →</button>
+    </div>
   </div>
 </dialog>
 
