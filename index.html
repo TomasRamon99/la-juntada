@@ -37,6 +37,7 @@
   <button id="btn-save">💾 Guardar juntada</button>
 </div>
 
+<div id="user-bar"></div>
 <div class="tabs">
   <div class="tab" id="tab-plan-btn" data-tab="plan">🛒 Planificar</div>
   <div class="tab on" id="tab-div-btn" data-tab="div">🧾 Cuentas</div>
@@ -221,7 +222,7 @@
 
 <p class="foot">La Juntada · Tomas Ramon con Claude</p>
 
-<script src="app.js"></script>
+<script type="module" src="app.js"></script>
 <script>
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("sw.js").catch(()=>{});

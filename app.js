@@ -1,3 +1,21 @@
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBZlH1clKf0kQpR4iCmpwBLVLzgh8uFvnA",
+  authDomain: "la-juntada-1800d.firebaseapp.com",
+  projectId: "la-juntada-1800d",
+  storageBucket: "la-juntada-1800d.firebasestorage.app",
+  messagingSenderId: "1078230856402",
+  appId: "1:1078230856402:web:2851f9a60418baf812b30b"
+};
+const fbApp = initializeApp(firebaseConfig);
+const auth  = getAuth(fbApp);
+const db    = getFirestore(fbApp);
+let currentUser = null;
+let _cloudTimer = null;
+
 const $ = s => document.querySelector(s);
 const money = n => "$" + Math.round(n).toLocaleString("es-AR");
 function parsePrice(s){
@@ -128,7 +146,10 @@ function normalize(s){
   s.items.forEach(i=>{ if(i.payer && !validPayers.has(i.payer)) i.payer=""; });
   return s;
 }
-function save(){ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){} }
+function save(){
+  try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){}
+  if(currentUser){ clearTimeout(_cloudTimer); _cloudTimer=setTimeout(()=>saveCloud(),1500); }
+}
 function load(){ try{ const r=localStorage.getItem(STORE); return r?JSON.parse(r):null; }catch(e){ return null; } }
 
 // ---- compartir por link (datos en la URL) ----
@@ -553,7 +574,10 @@ $("#btn-share").onclick=async()=>{
 
 // ---- Historial ----
 function getHist(){ try{ return JSON.parse(localStorage.getItem(HIST))||[]; }catch(e){ return []; } }
-function setHist(h){ try{ localStorage.setItem(HIST,JSON.stringify(h)); }catch(e){} }
+function setHist(h){
+  try{ localStorage.setItem(HIST,JSON.stringify(h)); }catch(e){}
+  if(currentUser) saveHistCloud();
+}
 function loadJuntada(id, skipConfirm){
   const h=getHist(); const j=h.find(x=>x.id===id); if(!j) return;
   if(!skipConfirm && (state.people.length||state.items.length) && !confirm("Abrir \""+j.name+"\" reemplaza lo que tenés ahora. ¿Seguir?")) return;
@@ -584,8 +608,6 @@ function renderHist(){
 $("#btn-hist").onclick=()=>{ renderHist(); $("#dlg-hist").showModal(); };
 $("#btn-reglas").onclick=()=>{ renderRules(); $("#dlg-reglas").showModal(); };
 $("#reglas-close").onclick=()=>$("#dlg-reglas").close();
-$("#btn-reglas").onclick=()=>{ renderRules(); $("#dlg-reglas").showModal(); };
-$("#reglas-close").onclick=()=>$("#dlg-reglas").close();
 $("#hist-close").onclick=()=>$("#dlg-hist").close();
 $("#hist-list").addEventListener("click",e=>{
   const row=e.target.closest(".histitem"); if(!row)return; const id=row.dataset.id; const h=getHist();
@@ -612,6 +634,53 @@ function renderWelcomeHist(){
       </div>`).join("")
     + (h.length>4?`<div style="font-size:12px;color:var(--muted);text-align:center;margin-top:2px">y ${h.length-4} más en 📋 Historial</div>`:"");
 }
+
+// ---- Firebase cloud sync ----
+async function saveCloud(){
+  if(!currentUser) return;
+  try{
+    await setDoc(doc(db,"users",currentUser.uid,"state","current"),{
+      data:JSON.stringify(state), updatedAt:new Date().toISOString()
+    });
+  }catch(e){ console.warn("saveCloud error:",e); }
+}
+async function saveHistCloud(){
+  if(!currentUser) return;
+  try{
+    const h=localStorage.getItem(HIST)||"[]";
+    await setDoc(doc(db,"users",currentUser.uid,"hist","list"),{data:h});
+  }catch(e){ console.warn("saveHistCloud error:",e); }
+}
+async function loadCloud(user){
+  try{
+    const snap=await getDoc(doc(db,"users",user.uid,"state","current"));
+    if(snap.exists()){
+      state=normalize(JSON.parse(snap.data().data));
+      try{ localStorage.setItem(STORE,JSON.stringify(state)); }catch(e){}
+      renderAll();
+    }
+    const hsnap=await getDoc(doc(db,"users",user.uid,"hist","list"));
+    if(hsnap.exists()){
+      try{ localStorage.setItem(HIST,hsnap.data().data); }catch(e){}
+      renderWelcomeHist();
+    }
+  }catch(e){ console.warn("loadCloud error:",e); }
+}
+function renderUserBar(){
+  const bar=$("#user-bar"); if(!bar) return;
+  if(currentUser){
+    const photo=currentUser.photoURL||"";
+    const name=currentUser.displayName||currentUser.email||"Usuario";
+    bar.innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;color:var(--muted)"><img src="${photo}" style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--line);flex:0 0 auto" onerror="this.style.display='none'"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</span><span style="font-size:11px;background:var(--ok-soft);color:var(--ok);border-radius:6px;padding:2px 7px;white-space:nowrap">☁ sincronizado</span><button id="btn-logout" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:4px 8px;border-radius:6px;white-space:nowrap">Salir</button></div>`;
+    const bl=$("#btn-logout"); if(bl) bl.onclick=()=>signOut(auth);
+  } else {
+    bar.innerHTML=`<button id="btn-login" class="ghost" style="width:100%;font-size:13px;padding:9px;display:flex;align-items:center;justify-content:center;gap:8px;margin:4px 0"><svg width="16" height="16" viewBox="0 0 48 48" style="flex:0 0 auto"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Iniciar sesión con Google para sincronizar</button>`;
+    const bl=$("#btn-login"); if(bl) bl.onclick=()=>signInWithPopup(auth,new GoogleAuthProvider()).catch(e=>console.warn(e));
+  }
+}
+onAuthStateChanged(auth, async user=>{
+  currentUser=user; renderUserBar(); if(user) await loadCloud(user);
+});
 
 // ---- init ----
 // ---- Dark mode ----
