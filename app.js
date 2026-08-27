@@ -201,7 +201,7 @@ function settle(pp){
   const t=[]; let i=0,j=0;
   while(i<db.length && j<cr.length){
     const pay=Math.min(db[i].bal,cr[j].bal);
-    t.push({from:db[i].name,to:cr[j].name,amount:pay,alias:cr[j].alias});
+    t.push({from:db[i].name,to:cr[j].name,fromId:db[i].id,toId:cr[j].id,amount:pay,alias:cr[j].alias});
     db[i].bal-=pay; cr[j].bal-=pay;
     if(db[i].bal<0.5)i++; if(cr[j].bal<0.5)j++;
   }
@@ -375,7 +375,7 @@ function renderPagos(){
     ps.innerHTML='<div style="background:var(--ok-soft);border:1px solid #bfe3cd;border-radius:12px;padding:14px;text-align:center;color:var(--ok);font-weight:600">✓ Todos están a mano — no hay transferencias pendientes.</div>';
   } else {
     ps.innerHTML=t.map(x=>{
-      const key=x.from+"|"+x.to;
+      const key=(x.fromId||x.from)+"|"+(x.toId||x.to);
       const done=(state.settled||[]).includes(key);
       return `<div class="pagos-row${done?" pagos-done":""}">
         <button class="pagos-check" data-key="${key}" aria-label="${done?"Marcar como pendiente":"Marcar como saldado"}">${done?"✅":"⬜"}</button>
@@ -384,14 +384,7 @@ function renderPagos(){
       </div>`;
     }).join("");
   }
-  ps.addEventListener("click",e=>{
-    const btn=e.target.closest(".pagos-check"); if(!btn) return;
-    const key=btn.dataset.key;
-    if(!state.settled) state.settled=[];
-    const idx=state.settled.indexOf(key);
-    if(idx>=0) state.settled.splice(idx,1); else state.settled.push(key);
-    save(); renderPagos();
-  },{once:true});
+
   pp2.innerHTML=c.pp.map(p=>{
     const bal=p.balance; const pos=bal>0.5; const neg=bal<-0.5;
     const color=pos?"var(--ok)":neg?"var(--accent)":"var(--muted)";
@@ -405,7 +398,7 @@ function renderNombre(){
   el.textContent=state.nombre||"";
   el.style.display=state.nombre?"":"none";
 }
-function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 // ---- TABS ----
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
@@ -599,7 +592,7 @@ $("#btn-save").onclick=()=>{
   const finalName=name.trim()||fecha;
   const c=compute();
   const h=getHist();
-  h.unshift({id:uid(),name:finalName,date:fecha,total:c.total,np:state.people.length,snap:JSON.parse(JSON.stringify({people:state.people,items:state.items,rounding:state.rounding}))});
+  h.unshift({id:uid(),name:finalName,date:fecha,total:c.total,np:state.people.length,snap:JSON.parse(JSON.stringify({people:state.people,items:state.items,rounding:state.rounding,nombre:state.nombre||finalName}))});
   setHist(h); renderWelcomeHist();
   $("#btn-save").textContent="✓ Guardada"; setTimeout(()=>$("#btn-save").textContent="💾 Guardar juntada",1500);
 };
@@ -673,7 +666,7 @@ async function saveCloud(){
 async function saveHistCloud(){
   if(!currentUser) return;
   try{
-    const h=localStorage.getItem(HIST)||"[]";
+    const h=JSON.stringify(getHist());
     await setDoc(doc(db,"users",currentUser.uid,"hist","list"),{data:h});
   }catch(e){ console.warn("saveHistCloud error:",e); }
 }
@@ -709,7 +702,6 @@ function renderUserBar(){
     document.querySelectorAll(".welcome-login-btn").forEach(b=>b.onclick=()=>signInWithPopup(auth,new GoogleAuthProvider()).catch(e=>console.warn(e)));
   }
 }
-}
 onAuthStateChanged(auth, async user=>{
   currentUser=user; renderUserBar(); if(user) await loadCloud(user);
 });
@@ -739,5 +731,14 @@ $("#pl-dessert-toggle").classList.toggle("on",state.planDessert);
 $("#pl-dessert-toggle").textContent=state.planDessert?"Sí":"No";
 applySplitUI();
 document.querySelectorAll("#round-seg button").forEach(b=>b.classList.toggle("on",(parseInt(b.dataset.r)||0)===state.rounding));
+// Delegacion permanente para checkboxes de pagos
+document.addEventListener("click",e=>{
+  const btn=e.target.closest(".pagos-check"); if(!btn) return;
+  const key=btn.dataset.key;
+  if(!state.settled) state.settled=[];
+  const idx=state.settled.indexOf(key);
+  if(idx>=0) state.settled.splice(idx,1); else state.settled.push(key);
+  save(); renderPagos();
+});
 renderWelcomeHist();
 renderAll();
